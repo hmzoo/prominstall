@@ -1,0 +1,6 @@
+- labels:
+    env: dev
+    group: test
+    service_type: switch
+  targets:
+  - 10.24.24.5

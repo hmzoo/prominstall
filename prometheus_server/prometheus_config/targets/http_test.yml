@@ -1,0 +1,9 @@
+- labels:
+    env: dev
+    group: test
+    service_type: webservice
+  targets:
+  - https://git.hmzoo.org
+  - https://prometheus.io
+  - https://github.com/
+  

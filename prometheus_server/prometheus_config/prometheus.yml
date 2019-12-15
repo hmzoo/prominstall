@@ -1,0 +1,82 @@
+global:
+
+  scrape_interval:     30s
+  evaluation_interval: 30s
+
+  # Attach these labels to any time series or alerts when communicating with
+  # external systems (federation, remote storage, Alertmanager).
+  external_labels:
+    env: 'infrastructure'   # C'est simplement le nom de votre environnement
+
+# fichier de règles pour l'alerting, c'est dans ce fichier que sont les définitions des alertes
+rule_files:
+  - 'alert.rules.yml'
+  # - "first.rules"
+  # - "second.rules"
+# spécification du serveur alertmanager
+
+alerting:
+  alertmanagers:
+  - scheme: http
+    static_configs:
+    - targets:
+      - "alertmanager:9093"
+
+
+
+# la scrape configuration de prometheus, les hosts qu'il va contacter pour chercher les métrique
+scrape_configs:
+
+#  - job_name: 'prometheus host'
+#    static_configs:
+#      - targets: ['127.0.0.1:9100']
+#    scrape_interval: 5s
+
+    ### blackbox probe  HTTP
+  - job_name: 'http_test'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__address__]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox_exporter:9115
+    file_sd_configs:
+      - files:
+        -  /etc/prometheus/targets/http_test.yml
+
+    ### blackbox probe ICMP
+  - job_name: 'icmp_test'
+    metrics_path: /probe
+    scrape_interval: 10s
+    params:
+      module: [icmp]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__address__]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox_exporter:9115
+    file_sd_configs:
+      - files:
+        -  /etc/prometheus/targets/icmp_test.yml
+
+    ### snmp exporter probe  SNMP
+  - job_name: 'snmp_test'
+    metrics_path: /snmp
+    params:
+      module: [if_mib]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: snmp_exporter:9116  # SNMP exporter.
+    file_sd_configs:
+      - files:
+        -  /etc/prometheus/targets/snmp_test.yml

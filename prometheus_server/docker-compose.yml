@@ -1,0 +1,50 @@
+version: '3.7'
+
+
+
+services:
+
+  prometheus:
+    image: prom/prometheus:v2.1.0
+    volumes:
+        - ./prometheus_config:/etc/prometheus
+        - ./prometheus_data:/prometheus
+    restart: always
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - 9090:9090
+
+  blackbox:
+    image: prom/blackbox-exporter:latest
+    container_name: blackbox_exporter
+    volumes:
+    - ./blackbox_exporter:/config
+    restart: always
+    command:
+      - '--config.file=/config/blackbox.yml'
+    ports:
+      - 9115:9115
+
+  snmp_exporter:
+    image: prom/snmp-exporter:latest
+    container_name: snmp_exporter
+    volumes:
+    - ./snmp_exporter:/etc/snmp_exporter
+    restart: always
+    command:
+      - '--log.level=debug'
+      - '--config.file=/etc/snmp_exporter/snmp.yml'
+    ports:
+      - 9116:9116
+
+  alertmanager:
+    image: prom/alertmanager
+    ports:
+      - 9093:9093
+    volumes:
+      - ./alertmanager_config/:/etc/alertmanager/
+    restart: always
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+      - '--storage.path=/alertmanager'

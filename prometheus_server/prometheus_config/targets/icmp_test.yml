@@ -1,0 +1,7 @@
+- labels:
+    env: dev
+    group: test
+    service_type: dns server
+  targets:
+  - 8.8.8.8
+  - 208.67.222.222
